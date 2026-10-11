@@ -32,6 +32,7 @@ The `.cmd` form avoids PowerShell script-execution-policy errors on Windows.
 
 - Add and delete notices with title, details, relevant date, and High / Medium / Low priority.
 - Search notices, filter by priority or upcoming date, and change sort order.
+- See **Upcoming Deadline Reminders** for dated saved notices within the next 7 local calendar days; deadlines today through 3 days away are highlighted.
 - Extract and save up to three useful key points with a small, local rule-based summarizer.
 - Ask CampusMate about dates, deadlines, tasks, and summaries found in saved notices. This is a local, rule-based Q&A prototype; answers show their notice sources and say when information is unavailable.
 - Persist notices, summaries, and refresh timestamp in this browser's local storage.
@@ -49,6 +50,8 @@ Freshness is calculated from the saved `lastSuccessfulRefresh` timestamp. Data w
 
 The Notice Assistant is also rule-based and only reads notices saved in this browser. Its conversation is temporary and is not stored. Notices are not shared between students: a shared cloud database remains future work.
 
+Upcoming Deadline Reminders are calculated from dates already saved with notices on this device. They show a local in-app reminder only; CampusMate does not send push notifications or provide automatic alerts when the app is closed.
+
 ## Demo checklist
 
 1. Run the production preview (`npm.cmd run build`, then `npm.cmd run preview`) and open its URL online once.
@@ -59,6 +62,7 @@ The Notice Assistant is also rule-based and only reads notices saved in this bro
 6. Choose **Age cache past 30 min**; confirm the stale warning is shown. Refresh while connected to return the local cache timestamp to the fresh window.
 7. Reload the browser to confirm local data persists. For an actual offline check, use the browser's install option or developer tools' offline mode after step 1.
 8. Ask CampusMate for upcoming deadlines, important dates, a notice summary, and a topic that is not saved. Check that answers show their source notice and unavailable information is stated clearly.
+9. Add notices dated today, within 3 days, within 7 days, and beyond 7 days. Confirm only the first three appear (with the within-3-day notices highlighted); remove or update those dates and confirm the empty state appears when none remain.
 
 ## Adapting this project
 

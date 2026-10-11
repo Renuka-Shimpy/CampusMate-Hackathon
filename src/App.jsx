@@ -108,6 +108,40 @@ function App() {
   const freshCount =
     cacheState === "fresh" ? savedData.notices.length : 0;
 
+  const upcomingReminders = useMemo(() => {
+    const currentDate = new Date(now);
+    const today = Date.UTC(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      currentDate.getDate(),
+    );
+
+    return savedData.notices
+      .map((notice) => {
+        if (!notice.date) return null;
+        const [year, month, day] = notice.date.split("-").map(Number);
+        const localDate = new Date(year, month - 1, day);
+        if (
+          !year ||
+          !month ||
+          !day ||
+          localDate.getFullYear() !== year ||
+          localDate.getMonth() !== month - 1 ||
+          localDate.getDate() !== day
+        ) {
+          return null;
+        }
+
+        const dateNumber = Date.UTC(year, month - 1, day);
+        const daysUntil = Math.round((dateNumber - today) / 86_400_000);
+        return daysUntil >= 0 && daysUntil <= 7
+          ? { notice, daysUntil }
+          : null;
+      })
+      .filter(Boolean)
+      .sort((first, second) => first.daysUntil - second.daysUntil);
+  }, [now, savedData.notices]);
+
   useEffect(() => {
     const updateOnline = () => setIsOnline(navigator.onLine);
     window.addEventListener("online", updateOnline);
@@ -394,6 +428,49 @@ function App() {
               <strong className={`stat-value status-value ${cacheState}`}>{cacheState === "fresh" ? "Fresh" : cacheState === "stale" ? "Stale" : "Unverified"}</strong>
               <span className="stat-foot">{freshCount} notice{freshCount === 1 ? "" : "s"} in fresh window</span>
             </div>
+          </section>
+
+          <section className="reminders-section" aria-labelledby="reminders-title">
+            <div className="reminders-heading">
+              <div className="reminders-heading-icon"><CalendarDays size={18} /></div>
+              <div>
+                <h2 id="reminders-title">Upcoming Deadline Reminders</h2>
+                <p>Dates from your saved notices, for the next 7 days</p>
+              </div>
+              <span className="reminder-count">{upcomingReminders.length}</span>
+            </div>
+            {upcomingReminders.length > 0 ? (
+              <ul className="reminder-list">
+                {upcomingReminders.map(({ notice, daysUntil }) => (
+                  <li
+                    className={`reminder-item ${daysUntil <= 3 ? "urgent" : ""}`}
+                    key={notice.id}
+                  >
+                    <div className="reminder-date-icon" aria-hidden="true">
+                      {daysUntil <= 3 ? <AlertTriangle size={17} /> : <CalendarDays size={17} />}
+                    </div>
+                    <div className="reminder-details">
+                      <strong>{notice.title}</strong>
+                      <span>{formatDate(notice.date)}</span>
+                    </div>
+                    <span className={`reminder-timing ${daysUntil <= 3 ? "urgent" : ""}`}>
+                      {daysUntil === 0
+                        ? "Due today"
+                        : daysUntil === 1
+                          ? "Due tomorrow"
+                          : `In ${daysUntil} days`}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="reminders-empty" role="status">
+                <CalendarDays size={19} />
+                <p>No upcoming dated notices in the next 7 days.</p>
+                <span>Add a relevant date to a notice to see it here.</span>
+              </div>
+            )}
+            <p className="reminders-note">Local reminders only—CampusMate does not send push notifications.</p>
           </section>
 
           <section className="assistant-section" id="notice-assistant" aria-labelledby="assistant-title">
