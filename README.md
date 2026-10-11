@@ -33,6 +33,7 @@ The `.cmd` form avoids PowerShell script-execution-policy errors on Windows.
 - Add and delete notices with title, details, relevant date, and High / Medium / Low priority.
 - Search notices, filter by priority or upcoming date, and change sort order.
 - Extract and save up to three useful key points with a small, local rule-based summarizer.
+- Ask CampusMate about dates, deadlines, tasks, and summaries found in saved notices. This is a local, rule-based Q&A prototype; answers show their notice sources and say when information is unavailable.
 - Persist notices, summaries, and refresh timestamp in this browser's local storage.
 - Installable PWA shell with a service worker that caches the production app and same-origin static resources.
 - Online/offline indicator, manual local-cache refresh, loading feedback, empty states, and visible storage/refresh errors.
@@ -46,6 +47,8 @@ Freshness is calculated from the saved `lastSuccessfulRefresh` timestamp. Data w
 
 **No college notice feed or AI service is configured.** An online indicator only means the browser reports a network connection; it does not mean notices were checked against the college. “Fresh” describes the age of the local snapshot, not whether a notice is still valid. Summaries are explicitly rule-based and run in the browser; no API key or backend is included.
 
+The Notice Assistant is also rule-based and only reads notices saved in this browser. Its conversation is temporary and is not stored. Notices are not shared between students: a shared cloud database remains future work.
+
 ## Demo checklist
 
 1. Run the production preview (`npm.cmd run build`, then `npm.cmd run preview`) and open its URL online once.
@@ -55,6 +58,7 @@ Freshness is calculated from the saved `lastSuccessfulRefresh` timestamp. Data w
 5. Restore the demo connection. Choose **Fail next refresh**, then **Refresh cache**; confirm the failed request does not change the saved data.
 6. Choose **Age cache past 30 min**; confirm the stale warning is shown. Refresh while connected to return the local cache timestamp to the fresh window.
 7. Reload the browser to confirm local data persists. For an actual offline check, use the browser's install option or developer tools' offline mode after step 1.
+8. Ask CampusMate for upcoming deadlines, important dates, a notice summary, and a topic that is not saved. Check that answers show their source notice and unavailable information is stated clearly.
 
 ## Adapting this project
 

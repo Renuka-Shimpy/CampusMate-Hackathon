@@ -11,6 +11,7 @@ import {
   Cloud,
   CloudOff,
   GraduationCap,
+  MessageCircle,
   Plus,
   RefreshCw,
   Search,
@@ -20,6 +21,7 @@ import {
   X,
 } from "lucide-react";
 import { createLocalSummary } from "./summary.js";
+import { answerNoticeQuestion } from "./noticeAssistant.js";
 
 const CACHE_KEY = "campusmate-notices-v1";
 const MAX_CACHE_AGE_MS = 30 * 60 * 1000;
@@ -89,6 +91,8 @@ function App() {
   const [activeFilter, setActiveFilter] = useState("All notices");
   const [showComposer, setShowComposer] = useState(false);
   const [showDemo, setShowDemo] = useState(false);
+  const [assistantQuestion, setAssistantQuestion] = useState("");
+  const [assistantMessages, setAssistantMessages] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [noticeError, setNoticeError] = useState("");
   const [noticeMessage, setNoticeMessage] = useState("");
@@ -240,6 +244,25 @@ function App() {
     setNoticeError("");
   }
 
+  function askAssistant(event) {
+    event.preventDefault();
+    const question = assistantQuestion.trim();
+    if (!question) return;
+
+    const answer = answerNoticeQuestion(question, savedData.notices, new Date(now));
+    setAssistantMessages((messages) => [
+      ...messages,
+      { id: `${Date.now()}-user`, role: "user", text: question },
+      { id: `${Date.now()}-assistant`, role: "assistant", answer },
+    ]);
+    setAssistantQuestion("");
+  }
+
+  function askSuggestedQuestion(question) {
+    setAssistantQuestion(question);
+    document.getElementById("assistant-question")?.focus();
+  }
+
   const cacheDescription =
     cacheState === "fresh"
       ? "Saved snapshot is within the 30-minute window"
@@ -371,6 +394,66 @@ function App() {
               <strong className={`stat-value status-value ${cacheState}`}>{cacheState === "fresh" ? "Fresh" : cacheState === "stale" ? "Stale" : "Unverified"}</strong>
               <span className="stat-foot">{freshCount} notice{freshCount === 1 ? "" : "s"} in fresh window</span>
             </div>
+          </section>
+
+          <section className="assistant-section" id="notice-assistant" aria-labelledby="assistant-title">
+            <div className="assistant-heading">
+              <div className="assistant-avatar"><MessageCircle size={19} /></div>
+              <div>
+                <div className="assistant-title-row">
+                  <h2 id="assistant-title">Ask CampusMate</h2>
+                  <span className="prototype-badge">LOCAL PROTOTYPE</span>
+                </div>
+                <p>Ask about dates, deadlines, tasks, or summaries in your saved notices.</p>
+              </div>
+            </div>
+            <div className="assistant-disclaimer">
+              Answers use only notices saved on this device. This is rule-based Q&amp;A, not an AI or shared database.
+            </div>
+            {assistantMessages.length > 0 && (
+              <div className="assistant-transcript" role="log" aria-label="Notice Assistant conversation" aria-live="polite">
+                {assistantMessages.map((message) => (
+                  <div className={`chat-message ${message.role}`} key={message.id}>
+                    <span className="chat-role">{message.role === "user" ? "You" : "CampusMate · Local prototype"}</span>
+                    {message.role === "user" ? (
+                      <p>{message.text}</p>
+                    ) : (
+                      <>
+                        <p>{message.answer.message}</p>
+                        {message.answer.results.map((result, index) => (
+                          <div className="answer-source" key={`${message.id}-${index}`}>
+                            <strong>{result.title}</strong>
+                            {result.date && <span className="answer-date">Relevant date saved: {formatDate(result.date)}</span>}
+                            {result.points.length > 0 && (
+                              <ul>{result.points.map((point, pointIndex) => <li key={`${message.id}-${index}-${pointIndex}`}>{point}</li>)}</ul>
+                            )}
+                          </div>
+                        ))}
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="assistant-suggestions" aria-label="Example questions">
+              <button type="button" onClick={() => askSuggestedQuestion("What deadlines are coming up?")}>Upcoming deadlines</button>
+              <button type="button" onClick={() => askSuggestedQuestion("What are my important dates?")}>Important dates</button>
+              <button type="button" onClick={() => askSuggestedQuestion("Summarize my notices")}>Summarize notices</button>
+            </div>
+            <form className="assistant-form" onSubmit={askAssistant}>
+              <label className="sr-only" htmlFor="assistant-question">Ask about saved notices</label>
+              <input
+                id="assistant-question"
+                type="text"
+                value={assistantQuestion}
+                onChange={(event) => setAssistantQuestion(event.target.value)}
+                placeholder="e.g. When is the assignment due?"
+                autoComplete="off"
+              />
+              <button className="button button-primary" type="submit" disabled={!assistantQuestion.trim()}>
+                Ask <MessageCircle size={15} />
+              </button>
+            </form>
           </section>
 
           <section className="notice-section">
