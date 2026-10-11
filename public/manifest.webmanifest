@@ -1,0 +1,17 @@
+{
+  "name": "CampusMate",
+  "short_name": "CampusMate",
+  "description": "College notices and deadlines, available offline.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f6f7fb",
+  "theme_color": "#f6f7fb",
+  "icons": [
+    {
+      "src": "/campusmate-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
